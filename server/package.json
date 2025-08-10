@@ -5,16 +5,23 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js --watch index.js"
+    "dev": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.17.0",
     "nodemon": "^3.1.10",
+    "passport": "^0.7.0",
+    "passport-saml": "^3.2.4",
     "pg": "^8.16.3"
   }
 }
