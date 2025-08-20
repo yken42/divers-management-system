@@ -145,3 +145,80 @@ export const getAllDives = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+export const updateDive = async (req, res) => {
+    try {
+        // Enforce admin
+        if (!req.user || req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Admin access required' });
+        }
+
+        const { id } = req.params;
+        const { status, date } = req.body;
+
+        // Validate status if provided
+        const allowedStatuses = ["Approved", "Pending", "Rejected"];
+        if (typeof status !== 'undefined' && !allowedStatuses.includes(status)) {
+            return res.status(400).json({ message: 'Invalid status value' });
+        }
+
+        // Prepare updates
+        const updates = {};
+        if (typeof status !== 'undefined') {
+            updates.status = status;
+        }
+
+        if (typeof date !== 'undefined') {
+            if (!date) {
+                return res.status(400).json({ message: 'Date is required when provided' });
+            }
+            let formattedDate;
+            if (typeof date === 'string') {
+                const parsedDate = new Date(date);
+                if (isNaN(parsedDate.getTime())) {
+                    return res.status(400).json({ message: 'Invalid date format. Please provide a valid date (YYYY-MM-DD)' });
+                }
+                formattedDate = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate());
+            } else if (date instanceof Date) {
+                formattedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            } else {
+                return res.status(400).json({ message: 'Invalid date format. Please provide a valid date' });
+            }
+            updates.date = formattedDate;
+        }
+
+        // No fields provided
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ message: 'No valid fields provided to update' });
+        }
+
+        const updated = await Dive.findByIdAndUpdate(
+            id,
+            { $set: updates },
+            { new: true }
+        ).populate('user', 'fullName email');
+
+        if (!updated) {
+            return res.status(404).json({ message: 'Dive not found' });
+        }
+
+        return res.status(200).json({
+            message: 'Dive updated successfully',
+            dive: {
+                _id: updated._id,
+                date: updated.date.toISOString().split('T')[0],
+                status: updated.status,
+                user: updated.user ? {
+                    id: updated.user._id,
+                    fullName: updated.user.fullName,
+                    email: updated.user.email,
+                } : undefined,
+                createdAt: updated.createdAt,
+                updatedAt: updated.updatedAt,
+            }
+        });
+    } catch (error) {
+        console.error('Error updating dive:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
