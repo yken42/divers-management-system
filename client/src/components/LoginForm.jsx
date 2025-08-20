@@ -1,10 +1,16 @@
 import React, { useState } from 'react'
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-function LoginForm({ onToggleForm }) {
+function LoginForm({ onToggleForm, onLoginSuccess }) {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(null)
+  const navigate = useNavigate()
 
   const handleInputChange = (e) => {
     setFormData({
@@ -13,10 +19,47 @@ function LoginForm({ onToggleForm }) {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Login form submitted:', { email: formData.email, password: formData.password })
-    // Add login logic here
+    setError(null)
+    setSuccess(null)
+    setLoading(true)
+
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+
+    try {
+      const res = await axios.post(`${API_BASE_URL}/user/login`, {
+        email: formData.email,
+        password: formData.password
+      })
+
+      const { token, user } = res.data || {}
+      if (!token) {
+        throw new Error('Token not returned from server')
+      }
+
+      // Persist token (and optionally user)
+      localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user || {}))
+
+      setSuccess('התחברת בהצלחה')
+      
+      // Call the success callback and navigate
+      if (onLoginSuccess) {
+        onLoginSuccess()
+      }
+      
+      // Navigate to divers page after a short delay
+      setTimeout(() => {
+        navigate('/divers')
+      }, 1000)
+      
+    } catch (err) {
+      const message = err?.response?.data?.message || err.message || 'התחברות נכשלה'
+      setError(message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -68,32 +111,17 @@ function LoginForm({ onToggleForm }) {
           />
         </div>
 
-        {/* Forgot Password Link */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <input
-              id="remember-me"
-              name="remember-me"
-              type="checkbox"
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-              זכור אותי
-            </label>
-          </div>
-          <div className="text-sm">
-            <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-              שכחת סיסמה?
-            </a>
-          </div>
-        </div>
+        {/* Feedback */}
+        {error && <div className="text-red-600 text-sm">{error}</div>}
+        {success && <div className="text-green-600 text-sm">{success}</div>}
 
         {/* Submit Button */}
         <button
           type="submit"
+          disabled={loading}
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200"
         >
-          התחבר
+          {loading ? 'מתחבר…' : 'התחבר'}
         </button>
       </form>
 

@@ -47,7 +47,8 @@ export const createDive = async (req, res) => {
         // Create new dive with the authenticated user's ID
         const newDive = new Dive({ 
             date: formattedDate, 
-            user: req.user._id,  // Extract user ID from authenticated request
+            user: req.user._id, 
+            diverName: req.user.fullName, // Extract user ID from authenticated request
             status: "Pending"     // Default status
         });
         
@@ -105,5 +106,42 @@ export const getUserDives = async (req, res) => {
     } catch (error) {
         console.error("Error getting user dives:", error);
         return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export const getAllDives = async (req, res) => {
+    try {
+        // Only admins should reach here (enforced by middleware), but double-check
+        if (!req.user || req.user.role !== 'admin') {
+            return res.status(403).json({ 
+                message: 'Admin access required' 
+            });
+        }
+
+        const dives = await Dive.find({})
+            .sort({ date: 1, createdAt: -1 })
+            .populate('user', 'fullName email');
+
+        const formattedDives = dives.map(dive => ({
+            _id: dive._id,
+            date: dive.date.toISOString().split('T')[0],
+            status: dive.status,
+            user: dive.user ? {
+                id: dive.user._id,
+                fullName: dive.user.fullName,
+                email: dive.user.email
+            } : undefined,
+            createdAt: dive.createdAt,
+            updatedAt: dive.updatedAt
+        }));
+
+        return res.status(200).json({
+            message: 'All dives retrieved successfully',
+            dives: formattedDives,
+            count: formattedDives.length
+        });
+    } catch (error) {
+        console.error('Error getting all dives:', error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };

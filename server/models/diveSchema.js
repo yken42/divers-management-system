@@ -12,6 +12,7 @@ const diveSchema = new Schema({
         ref: "User",
         required: true,
     },
+    diverName: String,
 }, {
     timestamps: true
 })

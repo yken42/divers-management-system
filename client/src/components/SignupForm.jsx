@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 function SignupForm({ onToggleForm }) {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ function SignupForm({ onToggleForm }) {
     lastName: '',
     licenseNumber: ''
   })
+  const navigate = useNavigate()
 
   const handleInputChange = (e) => {
     setFormData({
@@ -25,6 +27,10 @@ function SignupForm({ onToggleForm }) {
     }
     console.log('Sign up form submitted:', formData)
     // Add sign up logic here
+  }
+
+  const handleToggleForm = () => {
+    navigate('/login')
   }
 
   return (
@@ -109,7 +115,7 @@ function SignupForm({ onToggleForm }) {
           />
         </div>
 
-        {/* Password Field */}
+        {/* Password Fields */}
         <div>
           <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
             סיסמה
@@ -126,7 +132,6 @@ function SignupForm({ onToggleForm }) {
           />
         </div>
 
-        {/* Confirm Password Field */}
         <div>
           <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
             אימות סיסמה
@@ -148,16 +153,16 @@ function SignupForm({ onToggleForm }) {
           type="submit"
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200"
         >
-          צור חשבון
+          הירשם
         </button>
       </form>
 
       {/* Toggle Form */}
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
-          כבר יש לך חשבון?{' '}
+          יש לך כבר חשבון?{' '}
           <button
-            onClick={onToggleForm}
+            onClick={handleToggleForm}
             className="font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline transition duration-200"
           >
             התחבר

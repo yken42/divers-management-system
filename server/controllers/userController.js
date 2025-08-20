@@ -61,7 +61,7 @@ export const login = async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "15m",
+      expiresIn: "10s",
     });
 
     return res.status(200).json({
@@ -77,6 +77,17 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     console.error("Error logging in:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const logout = async (req, res) => {
+  try {
+    // Stateless JWT logout: client should discard the token.
+    // If you later store the token in an httpOnly cookie, clear it here with res.clearCookie('token').
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Error logging out:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };

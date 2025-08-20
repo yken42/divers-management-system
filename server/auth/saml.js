@@ -8,7 +8,7 @@ const samlStrategy = new SamlStrategy(
     entryPoint: process.env.SAML_ENTRY_POINT, // IdP SSO URL
     issuer: process.env.SAML_ISSUER || "divers-management-system-sp",
     callbackUrl:
-      process.env.SAML_CALLBACK_URL || "http://localhost:4000/auth/saml/callback",
+    process.env.SAML_CALLBACK_URL || "http://localhost:4000/auth/saml/callback",
     cert: process.env.SAML_IDP_CERT, // IdP signing certificate (PEM)
     identifierFormat: null,
     disableRequestedAuthnContext: true,
